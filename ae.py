@@ -5,7 +5,6 @@ import smtplib
 import time
 from datetime import datetime
 from email.message import EmailMessage
-import pathlib
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -15,9 +14,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select
-from selenium.webdriver.chrome.service import Service
 import click
-import schedule
 from dotenv import dotenv_values
 
 # %%
@@ -41,6 +38,57 @@ def select_time(driver, xpath, target_time):
     t.send_keys(Keys.ENTER)
 
 
+@click.command(name="autoeurope_scraper")
+@click.option(
+    "--country",
+    type=str,
+    required=True,
+    help="Country of pickup. Check spelling at autoeurope website.",
+)
+@click.option("--city", type=str, required=True)
+@click.option("--pickup", type=str, help="Pickup location", required=True)
+@click.option(
+    "--pickupdate",
+    type=str,
+    help="Date of pickup formatted as 06-JUNI-2022",
+    required=True,
+)
+@click.option(
+    "--pickuptime",
+    type=str,
+    help="Time of pickup formatted in whole hours (ie. 14)",
+    required=True,
+)
+@click.option(
+    "--dropoffdate",
+    type=str,
+    help="Date of pickup formatted as 6-JUNI-2022 (no 0 in front of day)",
+    required=True,
+)
+@click.option(
+    "--dropofftime",
+    type=str,
+    help="Time of dropoff formatted in whole hours (ie. 14)",
+    required=True,
+)
+@click.option(
+    "--mailfrom",
+    type=str,
+    help="Mail address to send from. If none uses env file",
+    default="",
+)
+@click.option(
+    "--mailpass",
+    type=str,
+    help="Password to mailfrom email. If none uses env file",
+    default="",
+)
+@click.option(
+    "--mailto",
+    type=str,
+    help="Mail address to send to. If none given mails to the mail given in mailfrom",
+    default="",
+)
 def scrape_autoeurope(
     country,
     city,
@@ -63,8 +111,10 @@ def scrape_autoeurope(
     DELIVERY_DATE, DELIVERY_MONTH, DELIVERY_YEAR = dropoffdate.split("-")
     DELIVERY_TIME = dropofftime
 
-    EMAIL_ADDRESS = mailfrom
-    EMAIL_PASSWORD = mailpass
+    if mailfrom is None or mailto is None:
+        cfg = dotenv_values()
+    EMAIL_ADDRESS = mailfrom if mailfrom else cfg["EMAIL_ADDRESS"]
+    EMAIL_PASSWORD = mailpass if mailpass else cfg["EMAIL_PASS"]
     EMAIL_TO = mailto if mailto else mailfrom
     click.echo("Running tests")
     if PICKUP_DATE.startswith("0") or DELIVERY_DATE.startswith("0"):
@@ -326,25 +376,4 @@ def scrape_autoeurope(
 
 # %%
 if __name__ == "__main__":
-
-    cfg = dotenv_values()
-
-    schedule.every(6).hours.do(
-        scrape_autoeurope,
-        country="Kroatien",
-        city="Split",
-        pickup="Split Airport",
-        pickupdate="29-JUNI-2022",
-        pickuptime="10",
-        dropoffdate="6-JULI-2022",
-        dropofftime="17",
-        mailfrom=cfg["EMAIL_ADDRESS"],
-        mailpass=cfg["EMAIL_PASS"],
-        mailto=cfg["EMAIL_ADDRESS"],
-    )
-
-    schedule.run_all()
-
-    while True:
-        schedule.run_pending()
-        time.sleep(60 * 15)
+    scrape_autoeurope()
