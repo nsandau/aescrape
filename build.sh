@@ -1,1 +1,1 @@
-docker build -t ae-docker .
+docker build -t aedocker .
