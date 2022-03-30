@@ -111,7 +111,7 @@ def scrape_autoeurope(
     DELIVERY_DATE, DELIVERY_MONTH, DELIVERY_YEAR = dropoffdate.split("-")
     DELIVERY_TIME = dropofftime
 
-    if mailfrom is None or mailto is None:
+    if not mailfrom or not mailpass:
         cfg = dotenv_values()
     EMAIL_ADDRESS = mailfrom if mailfrom else cfg["EMAIL_ADDRESS"]
     EMAIL_PASSWORD = mailpass if mailpass else cfg["EMAIL_PASS"]
