@@ -1,1 +1,1 @@
-docker build -t rpiselenium .
+docker build -t aedocker .
