@@ -115,7 +115,7 @@ def scrape_autoeurope(
         cfg = dotenv_values()
     EMAIL_ADDRESS = mailfrom if mailfrom else cfg["EMAIL_ADDRESS"]
     EMAIL_PASSWORD = mailpass if mailpass else cfg["EMAIL_PASS"]
-    EMAIL_TO = mailto if mailto else mailfrom
+    EMAIL_TO = mailfrom if not mailto else mailto
 
     click.echo(f"Sending mail from: {EMAIL_ADDRESS} using pass {EMAIL_PASSWORD}")
     click.echo(f"Sending mail to: {EMAIL_TO}")
