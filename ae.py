@@ -116,6 +116,9 @@ def scrape_autoeurope(
     EMAIL_ADDRESS = mailfrom if mailfrom else cfg["EMAIL_ADDRESS"]
     EMAIL_PASSWORD = mailpass if mailpass else cfg["EMAIL_PASS"]
     EMAIL_TO = mailto if mailto else mailfrom
+
+    click.echo(f"Sending mail from: {EMAIL_ADDRESS} using pass {EMAIL_PASSWORD}")
+    click.echo(f"Sending mail to: {EMAIL_TO}")
     click.echo("Running tests")
     if PICKUP_DATE.startswith("0") or DELIVERY_DATE.startswith("0"):
         raise ValueError("Date cannot start with 0. Causes endless loop")
@@ -341,9 +344,10 @@ def scrape_autoeurope(
         diffs.columns = ["New price", "Old price"]
         diffs = diffs.assign(Difference=diffs["New price"] - diffs["Old price"])
         lower_prices = diffs[diffs.Difference.lt(0)]
-        click.echo("Sending mail")
 
         if lower_prices.shape[0] > 0:
+            click.echo("Sending mail")
+
             msg = EmailMessage()
             msg["Subject"] = f"Prisen er faldet for {DESTINATION_CITY}"
             msg["From"] = EMAIL_ADDRESS
