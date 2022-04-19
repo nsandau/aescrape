@@ -1,11 +1,8 @@
-FROM mambaorg/micromamba:latest
+FROM python:3.10-bullseye
 
-USER root
 RUN apt-get -y update && apt-get install -y chromium chromium-driver && apt-get -y autoremove && apt-get -y autoclean
 
-USER $MAMBA_USER
-COPY --chown=$MAMBA_USER:$MAMBA_USER env.yaml /tmp/env.yaml
-RUN micromamba install -y -f /tmp/env.yaml && \
-    micromamba clean --all --yes
+RUN pip install --upgrade pip
+RUN pip install selenium click pandas matplotlib python-dotenv
 
 WORKDIR /usr/workspace 
