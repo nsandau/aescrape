@@ -8,6 +8,7 @@ from email.message import EmailMessage
 
 import matplotlib.pyplot as plt
 import pandas as pd
+from pathlib import Path
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -126,8 +127,8 @@ def scrape_autoeurope(
     if PICKUP_MONTH.isdigit() or DELIVERY_MONTH.isdigit():
         raise ValueError("Specify month as JUNI etc")
 
-    CSV_OUT = "data.csv"
-    PLT_OUT = "prices.png"
+    CSV_OUT = Path(f"out/{country}_{PICKUP_YEAR}_data.csv")
+    PLT_OUT = Path(f"out/{country}_{PICKUP_YEAR}_prices.png")
 
     #### START
     click.echo("Starting driver")
@@ -146,25 +147,17 @@ def scrape_autoeurope(
     click.echo("Selecting country, city and pickup location")
 
     ### SET LOCATION
-    Select(driver.find_element(By.NAME, "PU-country")).select_by_visible_text(
-        DESTINATION_COUNTRY
-    )
+    Select(driver.find_element(By.NAME, "PU-country")).select_by_visible_text(DESTINATION_COUNTRY)
 
-    Select(driver.find_element(By.NAME, "PU-city")).select_by_visible_text(
-        DESTINATION_CITY
-    )
+    Select(driver.find_element(By.NAME, "PU-city")).select_by_visible_text(DESTINATION_CITY)
 
-    Select(driver.find_element(By.NAME, "PU-loc")).select_by_visible_text(
-        DESTINATION_PICKUP_LOC
-    )
+    Select(driver.find_element(By.NAME, "PU-loc")).select_by_visible_text(DESTINATION_PICKUP_LOC)
 
     ## PICKUP DATE
     click.echo("Opening datepicker")
 
     ## OPEN DATEPICKER PICK_UP
-    driver.find_element(
-        By.XPATH, r"//div[@data-label='Afhentningsdato']//button"
-    ).click()
+    driver.find_element(By.XPATH, r"//div[@data-label='Afhentningsdato']//button").click()
 
     # CHECK IF FIRST DISPLAYED MONTH IS CORRECT
 
@@ -200,9 +193,7 @@ def scrape_autoeurope(
         click.echo("Selecting pickup month and year")
 
         while not correct_m_and_y:
-            driver.find_element(
-                By.XPATH, "//span[@class='ui-icon ui-icon-circle-triangle-e']"
-            ).click()
+            driver.find_element(By.XPATH, "//span[@class='ui-icon ui-icon-circle-triangle-e']").click()
             last_dp_m = driver.find_element(
                 By.XPATH,
                 r'//div[@class="ui-datepicker-group ui-datepicker-group-last"]//div//div[@class="ui-datepicker-title"]//span[@class="ui-datepicker-month"]',
@@ -232,9 +223,7 @@ def scrape_autoeurope(
     click.echo("Selecting dropoff month and year")
 
     ## OPEN DATEPICKER DELIVERY
-    driver.find_element(
-        By.XPATH, r"//div[@data-label='Afleveringsdato']//button"
-    ).click()
+    driver.find_element(By.XPATH, r"//div[@data-label='Afleveringsdato']//button").click()
 
     first_dp_m = driver.find_element(
         By.XPATH,
@@ -267,9 +256,7 @@ def scrape_autoeurope(
         correct_m_and_y = last_dp_m == DELIVERY_MONTH and last_dp_y == DELIVERY_YEAR
 
         while not correct_m_and_y:
-            driver.find_element(
-                By.XPATH, "//span[@class='ui-icon ui-icon-circle-triangle-e']"
-            ).click()
+            driver.find_element(By.XPATH, "//span[@class='ui-icon ui-icon-circle-triangle-e']").click()
             last_dp_m = driver.find_element(
                 By.XPATH,
                 r'//div[@class="ui-datepicker-group ui-datepicker-group-last"]//div//div[@class="ui-datepicker-title"]//span[@class="ui-datepicker-month"]',
@@ -364,14 +351,12 @@ def scrape_autoeurope(
                 subtype="html",
             )
 
-            with open("prices.png", "rb") as img:
+            with open(PLT_OUT, "rb") as img:
                 img_data = img.read()
                 img_type = imghdr.what(img.name)
                 img_name = img.name
 
-            msg.add_attachment(
-                img_data, maintype="image", subtype=img_type, filename=img_name
-            )
+            msg.add_attachment(img_data, maintype="image", subtype=img_type, filename=img_name)
 
             with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
                 smtp.login(EMAIL_ADDRESS, EMAIL_PASSWORD)

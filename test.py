@@ -1,5 +1,7 @@
 """
 Sanity check for webdriver
+docker run --rm -v $(pwd):/usr/workspace aedocker python ae.py
+
 """
 
 import unittest
